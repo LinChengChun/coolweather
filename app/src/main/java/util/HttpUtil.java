@@ -23,20 +23,22 @@ public class HttpUtil {
 				// TODO Auto-generated method stub
 				try {
 					Log.i(TAG, "new thread begin");
+					Log.i(TAG, address);
 					if(address == null) return;
 
 					URL url = new URL(address);
 					HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-					
+					Log.i(TAG, "line 31");
 					connection.setRequestMethod("GET");
 					connection.setConnectTimeout(8000);
 					connection.setReadTimeout(8000);
 					connection.setDoInput(true);
 					connection.setDoOutput(true);
-
+					Log.i(TAG, "line 37");
 					InputStream in = connection.getInputStream();
-					//BufferedInputStream bufferedInputStream = new BufferedInputStream(in);
+					Log.i(TAG, "line 39"+in.toString());
 					BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+//					BufferedInputStream bufferedInputStream = new BufferedInputStream(in);
 //					String response = null;
 //					String temp = null;
 //					int ret = 0;
@@ -48,13 +50,13 @@ public class HttpUtil {
 //						Log.i(TAG, temp);
 //						response += temp;
 //					}
-
+					Log.i(TAG, "line 52");
 					String line;
 					StringBuilder response = new StringBuilder();
-					while ( null != (line = reader.readLine())){
+					while ( (line = reader.readLine()) != null){
 						response.append(line);
 					}
-
+					Log.i(TAG, response.toString());
 					if(listener != null){
 						listener.onFinish(response.toString());
 					}

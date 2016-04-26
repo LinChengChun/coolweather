@@ -18,7 +18,7 @@ public class CoolWeatherDataBaseAccess {
     private static final String DB_Name = "CoolWeather.db";//数据库文件名称
     private static final int VERSION = 1;//数据库版本
     private static CoolWeatherDataBaseAccess coolWeatherDataBaseAccess = null;
-    private SQLiteDatabase mSQLiteDatabase = null;
+    private static SQLiteDatabase mSQLiteDatabase = null;
 
 
 
@@ -31,7 +31,7 @@ public class CoolWeatherDataBaseAccess {
     /**
      * 获取 CoolWeatherDataBaseAccess 的实类
      */
-    public CoolWeatherDataBaseAccess getIntance(Context context){
+    public static CoolWeatherDataBaseAccess getIntance(Context context){
         if(coolWeatherDataBaseAccess == null){
             coolWeatherDataBaseAccess = new CoolWeatherDataBaseAccess(context);
         }
@@ -42,7 +42,7 @@ public class CoolWeatherDataBaseAccess {
     /**
      *保存一个Province实例保存到数据库
      * */
-    public void saveProvince(Province province){
+    public static void saveProvince(Province province){
 
         if(province != null){
             ContentValues values = new ContentValues();
@@ -55,7 +55,7 @@ public class CoolWeatherDataBaseAccess {
     /**
      *加载全国所有的Province
      * */
-    public List<Province> loadProvince(){
+    public static List<Province> loadProvince(){
         List<Province> list = new ArrayList<Province>();
 
         Cursor cursor = mSQLiteDatabase.query("Province", null, null, null, null, null, null);
@@ -78,7 +78,7 @@ public class CoolWeatherDataBaseAccess {
     /**
      * 将City实例存储到数据库。
      */
-    public void saveCity(City city) {
+    public static void saveCity(City city) {
         if (city != null) {
             ContentValues values = new ContentValues();
             values.put("city_name", city.getCityName());
@@ -91,7 +91,7 @@ public class CoolWeatherDataBaseAccess {
     /**
      * 从数据库读取某省下所有的城市信息。
      */
-    public List<City> loadCities(int provinceId) {
+    public static List<City> loadCities(int provinceId) {
         List<City> list = new ArrayList<City>();
         Cursor cursor = mSQLiteDatabase.query("City", null, "province_id = ?",
                 new String[] { String.valueOf(provinceId)  }, null, null, null);
@@ -113,7 +113,7 @@ public class CoolWeatherDataBaseAccess {
     /**
      * 将County实例存储到数据库。
      */
-    public void saveCounty(County county) {
+    public static void saveCounty(County county) {
         if (county != null) {
             ContentValues values = new ContentValues();
             values.put("county_name", county.getCountyName());
@@ -127,7 +127,7 @@ public class CoolWeatherDataBaseAccess {
     /**
      * 从数据库读取某城市下所有的县信息。
      */
-    public List<County> loadCounties(int cityId) {
+    public static List<County> loadCounties(int cityId) {
         List<County> list = new ArrayList<County>();
         Cursor cursor = mSQLiteDatabase.query("County", null, "city_id = ?",
                 new String[] { String.valueOf(cityId) }, null, null, null);
