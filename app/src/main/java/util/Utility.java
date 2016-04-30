@@ -12,6 +12,7 @@ import model.Province;
  */
 public class Utility {
 
+    private static final String TAG = "Utility";
     /**
      * 解析和处理服务器返回的省级数据
      */
@@ -44,6 +45,7 @@ public class Utility {
             String[] allCities = response.split(",");
             if (allCities != null && allCities.length > 0) {
                 for (String c : allCities) {
+//                    Log.i(TAG, c);
                     String[] array = c.split("\\|");
                     City city = new City();
                     city.setCityCode(array[0]);
@@ -67,6 +69,10 @@ public class Utility {
             String[] allCounties = response.split(",");
             if (allCounties != null && allCounties.length > 0) {
                 for (String c : allCounties) {
+//                    if(c.startsWith("null")){
+//                        Log.i(TAG, c.subSequence(0, 3).toString());
+//                    }
+//                    Log.i(TAG, c);
                     String[] array = c.split("\\|");
                     County county = new County();
                     county.setCountyCode(array[0]);

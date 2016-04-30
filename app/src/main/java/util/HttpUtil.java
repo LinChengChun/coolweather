@@ -31,41 +31,55 @@ public class HttpUtil {
 					Log.i(TAG, "line 31");
 					connection.setRequestMethod("GET");
 					connection.setConnectTimeout(8000);
-					connection.setReadTimeout(8000);
+					connection.setReadTimeout(20000);
 					connection.setDoInput(true);
-					connection.setDoOutput(true);
+					//connection.setDoOutput(true);
 					Log.i(TAG, "line 37");
-					InputStream in = connection.getInputStream();
-					Log.i(TAG, "line 39"+in.toString());
-					BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-//					BufferedInputStream bufferedInputStream = new BufferedInputStream(in);
-//					String response = null;
-//					String temp = null;
-//					int ret = 0;
-//					int length = 0;
-//					byte buf[] = new byte[1024];
+
+					int responseCode = connection.getResponseCode();
+					Log.i(TAG, "responseCode = "+responseCode);
+
+					if(responseCode == HttpURLConnection.HTTP_OK) {
+						InputStream in = connection.getInputStream();
+						Log.i(TAG, "line 39" + in.toString());
+						BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+						Log.i(TAG, "line 52");
+						String line;
+						StringBuilder response = new StringBuilder();
+						while ((line = reader.readLine()) != null) {
+							response.append(line);
+						}
+
+//						BufferedInputStream bufferedInputStream = new BufferedInputStream(in);
+//						String response = "";
+//						String temp = null;
+//						int ret = 0;
+//						int length = 0;
+//						byte buf[] = new byte[1024];
 //
-//					while ( (ret = bufferedInputStream.read(buf, 0, buf.length))!= -1 ){
-//						temp = new String(buf);
-//						Log.i(TAG, temp);
-//						response += temp;
-//					}
-					Log.i(TAG, "line 52");
-					String line;
-					StringBuilder response = new StringBuilder();
-					while ( (line = reader.readLine()) != null){
-						response.append(line);
-					}
-					Log.i(TAG, response.toString());
-					if(listener != null){
-						listener.onFinish(response.toString());
+//						while ( (ret = bufferedInputStream.read(buf, 0, buf.length))!= -1 ){
+//							temp = new String(buf);
+//							Log.i(TAG, temp);
+//							response += temp;
+//						}
+
+						Log.i(TAG, response.toString());
+						if (listener != null) {
+							listener.onFinish(response.toString());
+						}
+
+						reader.close();
+						in.close();
+						connection.disconnect();
+
+					}else{
+						Log.i(TAG, "response code is error");
 					}
 					Log.i(TAG, "httpClient.execute(httpGet) 2");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
 					if (listener != null) {
-						// �ص�onError() ����
 						listener.onError(e);
 					}
 				}

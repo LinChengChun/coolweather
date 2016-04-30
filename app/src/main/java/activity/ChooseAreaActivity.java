@@ -1,13 +1,13 @@
 package activity;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -20,6 +20,7 @@ import java.util.List;
 import model.City;
 import model.CoolWeatherDataBaseAccess;
 import model.County;
+import model.MyAdapter;
 import model.Province;
 import util.HttpCallbackListener;
 import util.HttpUtil;
@@ -34,7 +35,8 @@ public class ChooseAreaActivity extends Activity{
 
     private Context mContext = null;//全局上下文
     private int currentLevel = 0;//当前所处级别
-    private ArrayAdapter<String> adapter = null;//字符串类型适配器
+//    private ArrayAdapter<String> adapter = null;//字符串类型适配器
+    private MyAdapter adapter;
     private List<String> mList = new ArrayList<String>();//保存数据集合
     private CoolWeatherDataBaseAccess mCoolWeatherDataBaseAccess = null;//数据库操作类
 
@@ -53,6 +55,7 @@ public class ChooseAreaActivity extends Activity{
 
     private TextView mTextView = null;//标题字符串控件
     private ListView mListView = null;//列表控件
+    private ProgressDialog mProgressDialog = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,7 +65,8 @@ public class ChooseAreaActivity extends Activity{
         mTextView = (TextView) findViewById(R.id.textView);
         mListView = (ListView) findViewById(R.id.listView);
 
-        adapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_list_item_1, mList);//初始化适配器
+//        adapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_list_item_1, mList);//初始化适配器
+        adapter = new MyAdapter(mContext, mList, R.layout.item_layout);
         mListView.setAdapter(adapter);
 
         mCoolWeatherDataBaseAccess = CoolWeatherDataBaseAccess.getIntance(mContext);//实例化 数据库操作类：创建数据库和3张表格
@@ -71,10 +75,18 @@ public class ChooseAreaActivity extends Activity{
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.i(TAG, "position = "+position);
                 if(currentLevel == Const.LEVEL_PROVINCE){
+
                     selectedProvince = mListProvince.get(position);
+                    Log.i(TAG, selectedProvince.getProvinceName());
+                    Log.i(TAG, selectedProvince.getProvinceCode());
+                    Log.i(TAG, ""+selectedProvince.getId());
                     queryCities();
                 }else if(currentLevel == Const.LEVEL_CITY){
                     selectedCity = mListCity.get(position);
+                    Log.i(TAG, "getCityName: "+selectedCity.getCityName());
+                    Log.i(TAG, "getCityCode: "+selectedCity.getCityCode());
+                    Log.i(TAG, "getId: "+selectedCity.getId());
+                    Log.i(TAG, "getProvinceId: "+selectedCity.getProvinceId());
                     queryCounties();
                 }
             }
@@ -160,7 +172,7 @@ public class ChooseAreaActivity extends Activity{
 
     private void queryFromServer(final String code, final String type){
         String address;
-        if( !TextUtils.isEmpty(code) ){
+        if( !TextUtils.isEmpty(code) ){//check code is nulll or code is "",return ture
             address ="http://www.weather.com.cn/data/list3/city" + code + ".xml";
         }else {
             address = "http://www.weather.com.cn/data/list3/city.xml";
@@ -168,6 +180,7 @@ public class ChooseAreaActivity extends Activity{
         Log.i(TAG, "queryFromServer start");
         Log.i(TAG, "address :"+address);
         Log.i(TAG, "type :"+type);
+        showProgressDialog();
         HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
             boolean result = false;
             @Override
@@ -177,18 +190,22 @@ public class ChooseAreaActivity extends Activity{
                     result = Utility.handleProvincesResponse(mCoolWeatherDataBaseAccess, response);
                 else if(type.equalsIgnoreCase("city"))
                     result = Utility.handleCitiesResponse(mCoolWeatherDataBaseAccess, response, selectedProvince.getId());
-                else if(type.equalsIgnoreCase("county"))
-                    result = Utility.handleCitiesResponse(mCoolWeatherDataBaseAccess, response, selectedCity.getId());
+                else if(type.equalsIgnoreCase("county")) {
+                    result = Utility.handleCountiesResponse(mCoolWeatherDataBaseAccess, response, selectedCity.getId());
+                    Log.i(TAG, "result = "+result);
+                    Log.i(TAG, "response: "+response);
+                }
                 if(result){
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-//                            closeProgressDialog();
+                            closeProgressDialog();
                             if ("province".equals(type)) {
                                 queryProvinces();
                             } else if ("city".equals(type)) {
                                 queryCities();
                             } else if ("county".equals(type)) {
+                                Log.i(TAG, "restart queryCounties() "+selectedCity.getCityName());
                                 queryCounties();
                             }
                         }
@@ -201,5 +218,53 @@ public class ChooseAreaActivity extends Activity{
 
             }
         });
+    }
+
+    private void showProgressDialog(){
+        if(mProgressDialog == null){
+            mProgressDialog = new ProgressDialog(this);
+            mProgressDialog.setMessage(mContext.getResources().getString(R.string.loading));
+            mProgressDialog.setCanceledOnTouchOutside(false);
+        }
+        mProgressDialog.show();
+    }
+    private void closeProgressDialog(){
+        if(mProgressDialog != null) {
+            mProgressDialog.dismiss();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        Log.i(TAG, "onBackPressed()");
+
+        String[] array = mContext.getResources().getStringArray(R.array.levelArray);
+        for(String temp: array){
+            Log.i(TAG, temp);
+        }
+        Log.i(TAG, "currentLevel = "+currentLevel);
+        Log.i(TAG, "currentLevel = "+array[currentLevel]);
+
+        if(currentLevel == Const.LEVEL_COUNTY){//当前处于 县级，即返回上一层 市级
+            queryCities();
+        }else if(currentLevel == Const.LEVEL_CITY){//当前处于 市级，即返回上一层 省级
+            queryProvinces();
+        }else{
+            super.onBackPressed();
+        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy()");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i(TAG, "onStop()");
     }
 }

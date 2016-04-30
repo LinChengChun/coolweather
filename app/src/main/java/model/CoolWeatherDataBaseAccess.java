@@ -95,6 +95,7 @@ public class CoolWeatherDataBaseAccess {
         List<City> list = new ArrayList<City>();
         Cursor cursor = mSQLiteDatabase.query("City", null, "province_id = ?",
                 new String[] { String.valueOf(provinceId)  }, null, null, null);
+
         if (cursor.moveToFirst()) {
             do {
                 City city = new City();
