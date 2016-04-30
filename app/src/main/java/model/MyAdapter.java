@@ -28,16 +28,36 @@ public class MyAdapter extends AppBaseAdapter{
     @Override
     public View getItemView(int position, View convertView, ViewGroup parent) {
 
+        ViewHolder viewHolder = null;
+
         if(convertView == null){
 //            convertView = LayoutInflater.from(mContext).inflate(resourceID, null, false);
             convertView = super.inflater.inflate(resourceID, null, false);
-        }else {
+            TextView textView = (TextView) convertView.findViewById(R.id.item);
 
+            viewHolder = new ViewHolder();
+            viewHolder.textView = textView;
+
+            convertView.setTag(viewHolder);
+        }else {
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        TextView textView = (TextView) convertView.findViewById(R.id.item);
-        textView.setText(mList.get(position));
+
+        viewHolder.textView.setText(mList.get(position));
 
         return convertView;
+    }
+
+    class ViewHolder{
+        TextView textView = null;
+
+        public TextView getTextView() {
+            return textView;
+        }
+
+        public void setTextView(TextView textView) {
+            this.textView = textView;
+        }
     }
 }

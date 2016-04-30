@@ -8,4 +8,8 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!--<style name="weather_text_style" >-->
+        <!--<item name="sizeNormal">@dimens/weather_text_size</item>-->
+    <!--</style>-->
+
 </resources>

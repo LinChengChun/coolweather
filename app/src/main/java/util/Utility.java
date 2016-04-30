@@ -1,6 +1,15 @@
 package util;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.text.TextUtils;
+import android.util.Log;
+
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import model.City;
 import model.CoolWeatherDataBaseAccess;
@@ -85,5 +94,62 @@ public class Utility {
             }
         }
         return false;
+    }
+
+    /**url1:http: www.weather.com.cn/data/list3/city190404.xml
+     * response: 190404|101190404
+     * url: http://www.weather.com.cn/data/cityinfo/101190404.html
+     * 先获取天气代号，再获取天气信息
+     * 格式如下：{"weatherinfo":
+     {"city":"昆山","cityid":"101190404","temp1":"21℃","temp2":"9℃",
+     "weather":"多云转小雨","img1":"d1.gif","img2":"n7.gif","ptime":"11:00"}
+     }
+     *  解析服务器返回的数组，得到天气信息
+     *  **/
+    public static void handleWeatherResponse(Context context, String response) {
+//        JSONArray jsonArray = new JSONArray(response);//传入 字符串，并创建一个JSONArray实例对象
+//        for(int i=0; i<jsonArray.length(); i++){
+//            JSONObject jsonObject = jsonArray.getJSONObject(i);
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONObject weatherInfo = jsonObject.getJSONObject("weatherinfo");
+
+            //WeatherInfo weatherInfo = new WeatherInfo();
+            String city = weatherInfo.getString("city");
+            String weatherCode = weatherInfo.getString("cityid");
+            String temp1 = weatherInfo.getString("temp1");
+            String temp2 = weatherInfo.getString("temp2");
+            String weatherDesp = weatherInfo.getString("weather");
+            String publishTime = weatherInfo.getString("ptime");
+
+            Log.i(TAG, city+temp1+temp2+weatherDesp+publishTime);
+
+            saveWeatherInfo(context, city, weatherCode, temp1, temp2,
+                    weatherDesp, publishTime);
+        }catch (Exception e){
+
+        }
+    }
+
+    /**
+     * 将服务器返回的所有天气信息存储到SharedPreferences文件中。
+     */
+    public static void saveWeatherInfo(Context context, String cityName,
+                                       String weatherCode, String temp1, String temp2, String weatherDesp, String
+                                               publishTime) {
+
+        SharedPreferences mSharedPreferences = context.getSharedPreferences("weatherInfo", Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putString("citiName", cityName);
+        editor.putString("weatherCode", weatherCode);
+        editor.putString("temp1", temp1);
+        editor.putString("temp2", temp2);
+        editor.putString("weatherDesp", weatherDesp);
+        editor.putString("publishTime", publishTime);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
+        editor.putString("currentDate", sdf.format(new Date()));
+        editor.commit();
     }
 }

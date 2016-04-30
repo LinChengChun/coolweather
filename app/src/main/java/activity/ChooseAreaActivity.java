@@ -3,6 +3,7 @@ package activity;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -48,6 +49,7 @@ public class ChooseAreaActivity extends Activity{
      * 选中的城市
      */
     private City selectedCity;
+    private County selectedCounty;
 
     private List<Province> mListProvince = null;
     private List<City> mListCity = null;
@@ -55,7 +57,8 @@ public class ChooseAreaActivity extends Activity{
 
     private TextView mTextView = null;//标题字符串控件
     private ListView mListView = null;//列表控件
-    private ProgressDialog mProgressDialog = null;
+    private ProgressDialog mProgressDialog = null;//显示进度对话框
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +91,17 @@ public class ChooseAreaActivity extends Activity{
                     Log.i(TAG, "getId: "+selectedCity.getId());
                     Log.i(TAG, "getProvinceId: "+selectedCity.getProvinceId());
                     queryCounties();
+                }else if(currentLevel == Const.LEVEL_COUNTY){//查询当地天气
+
+                    selectedCounty = mListCounty.get(position);
+                    String countyCode = selectedCounty.getCountyCode();
+                    Log.i(TAG, countyCode);
+
+                    Intent intent = new Intent();
+                    intent.setClass(ChooseAreaActivity.this, WeatherActivity.class);
+                    intent.putExtra("countyCode", countyCode);
+                    startActivity(intent);
+                    finish();
                 }
             }
         });
@@ -158,7 +172,7 @@ public class ChooseAreaActivity extends Activity{
                 String countyName = county.getCountyName();
                 String countyCode = county.getCountyCode();
                 int cityId = county.getCityId();
-                Log.i(TAG,countyName+"-"+countyCode+"-"+cityId);
+                Log.i(TAG, countyName+"-"+countyCode+"-"+cityId);
                 mList.add(countyName);
             }
             adapter.notifyDataSetChanged();
